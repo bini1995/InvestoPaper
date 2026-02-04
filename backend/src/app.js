@@ -9,6 +9,7 @@ const { getCandles } = require("./services/marketData");
 const {
   generateStrategyV1Signal,
 } = require("./services/strategy/strategyV1");
+const paperRoutes = require("./routes/paperRoutes");
 
 const app = express();
 
@@ -60,5 +61,7 @@ app.post("/api/strategy/signal", (req, res) => {
   const signal = generateStrategyV1Signal({ symbol, candles });
   return res.json(signal);
 });
+
+app.use("/api/paper", paperRoutes);
 
 module.exports = app;
