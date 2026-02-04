@@ -6,6 +6,9 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 
 const { getCandles } = require("./services/marketData");
+const {
+  generateStrategyV1Signal,
+} = require("./services/strategy/strategyV1");
 
 const app = express();
 
@@ -42,6 +45,20 @@ app.get("/api/market/candles", async (req, res) => {
     const status = error.statusCode || 500;
     return res.status(status).json({ error: error.message });
   }
+});
+
+app.post("/api/strategy/signal", (req, res) => {
+  const symbol = typeof req.body?.symbol === "string" ? req.body.symbol : "";
+  const candles = Array.isArray(req.body?.candles) ? req.body.candles : null;
+
+  if (!symbol || !candles) {
+    return res.status(400).json({
+      error: "symbol (string) and candles (array) are required in the request body.",
+    });
+  }
+
+  const signal = generateStrategyV1Signal({ symbol, candles });
+  return res.json(signal);
 });
 
 module.exports = app;
