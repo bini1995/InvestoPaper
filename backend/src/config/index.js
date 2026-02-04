@@ -4,7 +4,6 @@ dotenv.config();
 
 const REQUIRED_ENV_VARS = [
   "PORT",
-  "DATABASE_URL",
   "JWT_SECRET",
   "OPENROUTER_API_KEY",
   "NEWS_RSS_URLS",
