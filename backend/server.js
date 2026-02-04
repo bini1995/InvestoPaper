@@ -1,4 +1,4 @@
-require("dotenv").config();
+const config = require("./src/config");
 
 const express = require("express");
 const cors = require("cors");
@@ -16,7 +16,10 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true, time: new Date().toISOString() });
 });
 
-const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  console.log(`Backend listening on port ${port}`);
+app.get("/api/config/public", (_req, res) => {
+  res.json(config.public);
+});
+
+app.listen(config.port, () => {
+  console.log(`Backend listening on port ${config.port}`);
 });
