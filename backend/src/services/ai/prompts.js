@@ -1,13 +1,8 @@
 const buildNewsSummaryMessages = ({ symbol, items }) => {
   const system =
-    "You summarize market news. Return ONLY JSON. " +
-    "Schema: {\"bullets\":[string],\"sentiment\":\"bullish\"|\"bearish\"|\"mixed\",\"risks\":[string]}. " +
-    "Use only provided items; do not invent facts. " +
-    "Cite source URLs from the input items in each bullet or risk that references a fact. " +
-    "Keep bullets short and deterministic. " +
-    "Include a disclaimer that this is not financial advice as one of the bullets.";
+    "You are a concise analyst. Use only the provided headlines and URLs. Do not invent facts. If information is missing, say \u201cunknown\u201d. Output valid JSON only.";
 
-  const user = JSON.stringify({ symbol, items });
+  const user = `Summarize the following news items for ${symbol}. Provide:\n\t\u2022\t5 bullet points max, each referencing a URL from the list\n\t\u2022\toverall sentiment: bullish, bearish, or mixed\n\t\u2022\tkey risks (max 5)\n\nNews:\n${JSON.stringify(items)}`;
 
   return [
     { role: "system", content: system },
@@ -22,19 +17,13 @@ const buildTradeBriefingMessages = ({
   portfolioState,
 }) => {
   const system =
-    "You create a trade briefing. Return ONLY JSON. " +
-    "Schema: {\"planText\":string,\"doNotTradeIf\":[string],\"checklist\":[string],\"sizingAdvice\":string}. " +
-    "Use only the input data; do not invent facts. " +
-    "If referencing news, only cite URLs that already appear in the provided newsSummary bullets. " +
-    "Keep output short, structured, and deterministic. " +
-    "Include a disclaimer that this is not financial advice in planText.";
+    "You generate cautious, rules-based trade briefings. Use only provided signal output, portfolio state, and the news summary. Do not claim certainty. Output valid JSON only.";
 
-  const user = JSON.stringify({
-    symbol,
-    signalOutput,
-    newsSummary,
-    portfolioState,
-  });
+  const user = `Create a trade briefing for ${symbol} using:\nSignal output:\n${JSON.stringify(
+    signalOutput
+  )}\n\nPortfolio state:\n${JSON.stringify(
+    portfolioState
+  )}\n\nNews summary:\n${JSON.stringify(newsSummary)}\n\nReturn:\n\t\u2022\tplanText (short)\n\t\u2022\tchecklist (max 7)\n\t\u2022\tdoNotTradeIf (max 7)\n\t\u2022\tsizingAdvice (short)\n\t\u2022\tdisclaimer (one sentence)`;
 
   return [
     { role: "system", content: system },
