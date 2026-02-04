@@ -23,6 +23,7 @@ const buildState = ({ portfolio, positions, orders, trades }) => {
     portfolio: {
       id: portfolio.id,
       cash: portfolio.cash,
+      startingCash: portfolio.startingCash ?? portfolio.cash,
       equity,
       lastPrices: prices,
       createdAt: portfolio.createdAt,
@@ -49,6 +50,7 @@ class MemoryStore {
     this.portfolio = {
       id: 1,
       cash: startingCash,
+      startingCash,
       lastPrices: {},
       createdAt: now,
       updatedAt: now,
@@ -201,6 +203,7 @@ class PostgresStore {
       CREATE TABLE IF NOT EXISTS paper_portfolios (
         id SERIAL PRIMARY KEY,
         cash NUMERIC NOT NULL,
+        starting_cash NUMERIC,
         last_prices JSONB NOT NULL DEFAULT '{}'::jsonb,
         created_at TIMESTAMP NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMP NOT NULL DEFAULT NOW()
@@ -237,6 +240,11 @@ class PostgresStore {
         price NUMERIC NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT NOW()
       );
+      ALTER TABLE paper_portfolios
+        ADD COLUMN IF NOT EXISTS starting_cash NUMERIC;
+      UPDATE paper_portfolios
+        SET starting_cash = cash
+        WHERE starting_cash IS NULL;
     `);
 
     this.initialized = true;
@@ -250,6 +258,7 @@ class PostgresStore {
     return {
       id: row.id,
       cash: toNumber(row.cash),
+      startingCash: toNumber(row.starting_cash),
       lastPrices: row.last_prices || {},
       createdAt: row.created_at.toISOString(),
       updatedAt: row.updated_at.toISOString(),
@@ -301,8 +310,8 @@ class PostgresStore {
       await client.query("DELETE FROM paper_positions");
       await client.query("DELETE FROM paper_portfolios");
       const result = await client.query(
-        "INSERT INTO paper_portfolios (cash) VALUES ($1) RETURNING *",
-        [startingCash]
+        "INSERT INTO paper_portfolios (cash, starting_cash) VALUES ($1, $2) RETURNING *",
+        [startingCash, startingCash]
       );
       await client.query("COMMIT");
       const portfolio = this.formatPortfolio(result.rows[0]);

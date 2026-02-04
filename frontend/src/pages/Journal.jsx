@@ -10,6 +10,64 @@ const formatDate = (value) => {
   return date.toLocaleString();
 };
 
+const formatCurrency = (value) =>
+  typeof value === "number" && Number.isFinite(value)
+    ? value.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+      })
+    : "--";
+
+const renderManualTrade = (payload) => {
+  if (!payload) {
+    return <p className="muted">No details available.</p>;
+  }
+
+  return (
+    <div className="stack-sm">
+      <div className="split">
+        <span className="strong">{payload.symbol || "--"}</span>
+        <span className="muted">{payload.planSignal || "--"}</span>
+      </div>
+      <div className="split">
+        <span className="label">Executed entry</span>
+        <span>{formatCurrency(payload.executed?.entry)}</span>
+      </div>
+      <div className="split">
+        <span className="label">Stop loss</span>
+        <span>{formatCurrency(payload.executed?.stopLoss)}</span>
+      </div>
+      <div className="split">
+        <span className="label">Take profit</span>
+        <span>{formatCurrency(payload.executed?.takeProfit)}</span>
+      </div>
+      <div className="split">
+        <span className="label">Quantity</span>
+        <span>{payload.executed?.quantity ?? "--"}</span>
+      </div>
+      <div>
+        <p className="label">Checklist</p>
+        {Array.isArray(payload.checklist) && payload.checklist.length ? (
+          <ul className="list">
+            {payload.checklist.map((item) => (
+              <li key={item.text}>
+                {item.checked ? "✅" : "⬜"} {item.text}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">No checklist saved.</p>
+        )}
+      </div>
+      {payload.notes ? (
+        <p className="muted">Notes: {payload.notes}</p>
+      ) : (
+        <p className="muted">No notes provided.</p>
+      )}
+    </div>
+  );
+};
+
 export default function Journal() {
   const [entries, setEntries] = useState({ state: "loading" });
   const [note, setNote] = useState("");
@@ -96,9 +154,13 @@ export default function Journal() {
                       <span className="strong">{entry.type}</span>
                       <span className="muted">{formatDate(entry.createdAt)}</span>
                     </div>
-                    <p className="muted">
-                      {entry.payload?.text || "No details available."}
-                    </p>
+                    {entry.type === "manual_trade" ? (
+                      renderManualTrade(entry.payload)
+                    ) : (
+                      <p className="muted">
+                        {entry.payload?.text || "No details available."}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
