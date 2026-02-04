@@ -12,6 +12,7 @@ const {
 const paperRoutes = require("./routes/paperRoutes");
 const journalRoutes = require("./routes/journalRoutes");
 const planRoutes = require("./routes/planRoutes");
+const newsRoutes = require("./routes/newsRoutes");
 
 const app = express();
 
@@ -67,5 +68,6 @@ app.post("/api/strategy/signal", (req, res) => {
 app.use("/api/paper", paperRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/plan", planRoutes);
+app.use("/api/news", newsRoutes);
 
 module.exports = app;
