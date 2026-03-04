@@ -1,9 +1,43 @@
+const DEFAULT_API_BASE_URL = "http://localhost:3000";
+
 const RAW_API_BASE_URL =
   import.meta.env.REACT_APP_API_BASE_URL ||
   import.meta.env.VITE_BACKEND_URL ||
-  "http://localhost:3000";
+  DEFAULT_API_BASE_URL;
 
-export const API_BASE_URL = RAW_API_BASE_URL.replace(/\/$/, "");
+const normalizeApiBaseUrl = (value) => {
+  if (typeof value !== "string") {
+    return DEFAULT_API_BASE_URL;
+  }
+
+  const trimmedValue = value.trim();
+  if (!trimmedValue) {
+    return DEFAULT_API_BASE_URL;
+  }
+
+  let candidate = trimmedValue;
+
+  if (/^:\d+$/.test(candidate)) {
+    candidate = `http://localhost${candidate}`;
+  } else if (/^\d+$/.test(candidate)) {
+    candidate = `http://localhost:${candidate}`;
+  } else if (!/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(candidate)) {
+    candidate = `http://${candidate}`;
+  }
+
+  try {
+    const parsed = new URL(candidate);
+    if (!parsed.hostname) {
+      return DEFAULT_API_BASE_URL;
+    }
+
+    return `${parsed.protocol}//${parsed.host}`.replace(/\/$/, "");
+  } catch {
+    return DEFAULT_API_BASE_URL;
+  }
+};
+
+export const API_BASE_URL = normalizeApiBaseUrl(RAW_API_BASE_URL);
 
 const parseResponse = async (response) => {
   const contentType = response.headers.get("content-type") || "";
