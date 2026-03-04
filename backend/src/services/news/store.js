@@ -127,9 +127,52 @@ class PostgresStore {
   }
 }
 
+class ResilientStore {
+  constructor(primaryStore, fallbackStore) {
+    this.primaryStore = primaryStore;
+    this.fallbackStore = fallbackStore;
+    this.activeStore = primaryStore;
+    this.primaryAvailable = true;
+  }
+
+  async withFallback(operation) {
+    try {
+      return await operation(this.activeStore);
+    } catch (error) {
+      if (!this.primaryAvailable) {
+        throw error;
+      }
+
+      this.primaryAvailable = false;
+      this.activeStore = this.fallbackStore;
+      console.warn(
+        "News store fallback: PostgreSQL unavailable, switching to in-memory store.",
+        error.message
+      );
+
+      return operation(this.activeStore);
+    }
+  }
+
+  async init() {
+    return this.withFallback((store) => store.init());
+  }
+
+  async insertItems(items) {
+    return this.withFallback((store) => store.insertItems(items));
+  }
+
+  async listItems(limit) {
+    return this.withFallback((store) => store.listItems(limit));
+  }
+}
+
 const createStore = () => {
   if (process.env.DATABASE_URL) {
-    return new PostgresStore(process.env.DATABASE_URL);
+    return new ResilientStore(
+      new PostgresStore(process.env.DATABASE_URL),
+      new MemoryStore()
+    );
   }
   return new MemoryStore();
 };

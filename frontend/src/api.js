@@ -1,7 +1,7 @@
 const RAW_API_BASE_URL =
   import.meta.env.REACT_APP_API_BASE_URL ||
   import.meta.env.VITE_BACKEND_URL ||
-  "http://localhost:4000";
+  "http://localhost:3000";
 
 export const API_BASE_URL = RAW_API_BASE_URL.replace(/\/$/, "");
 
@@ -36,7 +36,11 @@ export const requestJson = async (path, options = {}) => {
 
     return { data: payload };
   } catch (error) {
-    return { error: error?.message || "Network error" };
+    return {
+      error:
+        error?.message ||
+        `Network error while contacting backend at ${API_BASE_URL}`,
+    };
   }
 };
 

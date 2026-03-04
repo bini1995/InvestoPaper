@@ -27,15 +27,21 @@ Local run instructions
 Backend
 1) cd backend
 2) cp .env.example .env
+   - Keep DATABASE_URL empty unless you have a running PostgreSQL instance.
 3) npm install
 4) npm run dev
 
 Frontend
 1) cd frontend
 2) cp .env.example .env
+   - Default backend URL is http://localhost:3000.
 3) npm install
 4) npm run dev
 
 Docker compose
 1) docker compose up --build
 2) open http://localhost:5173
+
+Troubleshooting
+- If you see "Failed to fetch" in the frontend, verify backend is running on port 3000 and frontend .env points to http://localhost:3000.
+- If you see `getaddrinfo ENOTFOUND host` in backend logs, your DATABASE_URL is still using a placeholder host.
