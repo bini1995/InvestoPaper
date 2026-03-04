@@ -44,4 +44,5 @@ Docker compose
 
 Troubleshooting
 - If you see "Failed to fetch" in the frontend, verify backend is running on port 3000 and frontend .env points to http://localhost:3000.
+- If your browser console shows requests like `:3000/health`, your frontend backend URL is malformed. Set `VITE_BACKEND_URL` or `REACT_APP_API_BASE_URL` to `http://localhost:3000` (or just `localhost:3000`).
 - If you see `getaddrinfo ENOTFOUND host` in backend logs, your DATABASE_URL is still using a placeholder host.
